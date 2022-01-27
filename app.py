@@ -1,5 +1,8 @@
 import streamlit as st
 import datetime, time
+from datetime import timedelta
+
+import matplotlib.pyplot as plt
 '''
 # TaxiFareModel Prediction
 '''
@@ -33,10 +36,39 @@ if st.button('Predict'):
     # print is visible in the server output, not in the page
     response = requests.get(url, params=data)
     pred = response.json()['prediction']
+    temp_date = []
+    for i in range(10):
+        temp_date.append(date_time + (i - 5) * timedelta(minutes = 15))
     """
     Result is:
     """
+
+    predictions = []
+    for dt in temp_date:
+        data = {
+            "pickup_latitude": pickup_latitude,
+            "pickup_longitude": pickup_longitude,
+            "dropoff_latitude": dropoff_latitude,
+            "dropoff_longitude": dropoff_longitude,
+            "passenger_count": int(passenger_count),
+            "pickup_datetime": dt,
+        }
+        response = requests.get(url, params=data)
+        predictions.append(response.json()['prediction'])
+
+
+
     st.write("It will cost $" + str(pred))
+
+    fig, ax = plt.subplots()
+    ax.plot(temp_date, predictions)
+    ax.set_xlabel(time)
+
+    st.pyplot(fig)
+
+
+
+
 else:
     st.write('Enter the params first')
 page_load_duration = time.time() - page_load_start_time
