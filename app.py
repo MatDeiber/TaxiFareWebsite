@@ -1,7 +1,8 @@
 import streamlit as st
 import datetime, time
 from datetime import timedelta
-
+from streamlit_folium import folium_static
+import folium
 import matplotlib.pyplot as plt
 '''
 # TaxiFareModel Prediction
@@ -9,13 +10,14 @@ import matplotlib.pyplot as plt
 page_load_start_time = time.time()
 page_load_time_placeholder = st.sidebar.empty()
 '''
-## Enter taxi ride information:
+## Enter taxi ride information: .strftime("%Y-%m-%d %H:%M:%S")
 '''
 d = st.date_input("Enter your date of travel",
                   datetime.datetime(2022, 1, 1, 1))
 st.write(d)
 t = st.time_input('Choose a time', datetime.time(8, 45))
-date_time = datetime.datetime.combine(d, t).strftime("%Y-%m-%d %H:%M:%S")
+date_time = datetime.datetime.combine(d, t)
+date_str = date_time.strftime("%Y-%m-%d %H:%M:%S")
 st.write(date_time)
 pickup_longitude = st.number_input('pickup longitude')
 pickup_latitude = st.number_input('pickup latitude')
@@ -29,7 +31,7 @@ data = {
     "dropoff_latitude": dropoff_latitude,
     "dropoff_longitude": dropoff_longitude,
     "passenger_count": int(passenger_count),
-    "pickup_datetime": date_time,
+    "pickup_datetime": date_str,
 }
 import requests
 if st.button('Predict'):
@@ -51,7 +53,7 @@ if st.button('Predict'):
             "dropoff_latitude": dropoff_latitude,
             "dropoff_longitude": dropoff_longitude,
             "passenger_count": int(passenger_count),
-            "pickup_datetime": dt,
+            "pickup_datetime": dt.strftime("%Y-%m-%d %H:%M:%S"),
         }
         response = requests.get(url, params=data)
         predictions.append(response.json()['prediction'])
@@ -66,6 +68,24 @@ if st.button('Predict'):
 
     st.pyplot(fig)
 
+
+
+
+    # center on Liberty Bell
+    m = folium.Map(location=[pickup_longitude, pickup_latitude], zoom_start=16)
+
+    # add marker for Liberty Bell
+    tooltip = "Liberty Bell"
+    folium.Marker([pickup_longitude, pickup_latitude],
+                  popup="Liberty Bell",
+                  tooltip=tooltip).add_to(m)
+
+    folium.Marker([dropoff_longitude, dropoff_latitude],
+                  popup="Liberty Bell",
+                  tooltip=tooltip).add_to(m)
+
+    # call to render Folium map in Streamlit
+    folium_static(m)
 
 
 
